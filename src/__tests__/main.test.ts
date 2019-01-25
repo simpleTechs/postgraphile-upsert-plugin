@@ -23,7 +23,9 @@ test.beforeEach(async t => {
   await container.setup(t.context)
   await bluebird.delay(5000)
   t.context.client = await createPool(t.context.dbConfig)
-  t.context.client.on('error', err => {})
+  t.context.client.on('error', err => {
+    // console.log(err);
+  })
   await t.context.client.query(`
 create table bikes (
   id serial,
@@ -75,7 +77,12 @@ const all = async t => {
 const create = async t => {
   const query = nanographql`
     mutation {
-      upsertBike(input: {
+      upsertBike(where: {
+        bike: {
+          make: "kona"
+        }
+      }, 
+      input: {
         bike: {
           weight: 25.6
           make: "kona"
@@ -101,3 +108,8 @@ test('test upsert crud', async t => {
   t.is(res.data.allBikes.edges.length, 1)
   t.is(res.data.allBikes.edges[0].node.make, 'kona')
 })
+
+// "should create a new record when one doesn't exist"
+// "should update a record when one does exist"
+// "shouldn't update if more than one exists"
+//
